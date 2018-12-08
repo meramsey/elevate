@@ -4,7 +4,7 @@ from ctypes.wintypes import HANDLE, BOOL, DWORD, HWND, HINSTANCE, HKEY
 from ctypes import windll
 import subprocess
 import sys
-
+from os.path import realpath
 # Constant defintions
 
 
@@ -72,7 +72,9 @@ def elevate(show_console=True, graphical=True):
         hwnd=None,
         lpVerb=b'runas',
         lpFile=sys.executable.encode('cp1252'),
-        lpParameters=subprocess.list2cmdline(sys.argv).encode('cp1252'),
+        lpParameters=subprocess.list2cmdline(
+            [realpath(sys.argv[0]), *sys.argv[1:]]
+        ).encode('cp1252'),
         nShow=int(show_console))
 
     if not ShellExecuteEx(ctypes.byref(params)):

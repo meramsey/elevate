@@ -26,7 +26,7 @@ def elevate(show_console=True, graphical=True):
     if os.getuid() == 0:
         return
 
-    args = [sys.executable] + sys.argv
+    args = [sys.executable, os.path.realpath(sys.argv[0]), *sys.argv[1:]]
     commands = []
 
     if graphical:
