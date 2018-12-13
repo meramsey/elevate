@@ -4,7 +4,7 @@ from ctypes.wintypes import HANDLE, BOOL, DWORD, HWND, HINSTANCE, HKEY
 from ctypes import windll
 import subprocess
 import sys
-from os.path import realpath
+from os.path import abspath
 # Constant defintions
 
 
@@ -63,7 +63,7 @@ CloseHandle.restype = BOOL
 
 # At last, the actual implementation!
 
-def elevate(show_console=True, graphical=True):
+def elevate(show_console=True, graphical=True, abspaths=False, cmdline=()):
     if windll.shell32.IsUserAnAdmin():
         return
 
@@ -73,7 +73,7 @@ def elevate(show_console=True, graphical=True):
         lpVerb=b'runas',
         lpFile=sys.executable.encode('cp1252'),
         lpParameters=subprocess.list2cmdline(
-            [realpath(sys.argv[0]), *sys.argv[1:]]
+            [abspath(sys.argv[0])] + sys.argv[1:]
         ).encode('cp1252'),
         nShow=int(show_console))
 

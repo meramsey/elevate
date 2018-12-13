@@ -14,10 +14,10 @@ def elevate(show_console=True, graphical=True):
         child process. Ignored on Linux / macOS.
     :param graphical: (Linux / macOS only) if True, attempt to use graphical
         programs (gksudo, etc). Ignored on Windows.
+    :param cmdline: Custom argv to use instead of the default sys.argv.
     """
     if sys.platform.startswith("win"):
         from elevate.windows import elevate
     else:
         from elevate.posix import elevate
     elevate(show_console, graphical)
-

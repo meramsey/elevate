@@ -24,9 +24,29 @@ def quote_applescript(string):
 
 def elevate(show_console=True, graphical=True):
     if os.getuid() == 0:
+        # tiny option parser to handle our special --_with-elevate-* opts
+        elevate_opts = dict(map(
+            lambda y: y.split("_")[1].split("="),
+            filter(
+                lambda x: all([cs in x for cs in ("_", "=", "--")]), sys.argv
+            )
+        ))
+        newdir = elevate_opts.get("with-elevate-cwd", False)
+        if newdir:
+            try:                      os.chdir(newdir)
+            except FileNotFoundError: pass
+            except Exception as e:    raise
+        sys.argv = list(filter(
+            lambda x: not any ([cs in x for cs in ("_", "=", "--")]), sys.argv
+        ))
         return
 
-    args = [sys.executable, os.path.realpath(sys.argv[0]), *sys.argv[1:]]
+    args = [
+        sys.executable,
+        os.path.abspath(sys.argv[0]),
+        "--_with-elevate-cwd=" + os.getcwd()
+    ] + sys.argv[1:]
+
     commands = []
 
     if graphical:
@@ -41,10 +61,12 @@ def elevate(show_console=True, graphical=True):
 
         if sys.platform.startswith("linux") and os.environ.get("DISPLAY"):
             commands.append(["pkexec"] + args)
-            commands.append(["gksudo"] + args)
-            commands.append(["kdesudo"] + args)
+            # commands.append(["gksudo"] + args)
+            # commands.append(["kdesudo"] + args)
 
     commands.append(["sudo"] + args)
+
+    print("execlp  ", args)
 
     for args in commands:
         try:
