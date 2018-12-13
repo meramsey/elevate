@@ -61,8 +61,8 @@ def elevate(show_console=True, graphical=True):
 
         if sys.platform.startswith("linux") and os.environ.get("DISPLAY"):
             commands.append(["pkexec"] + args)
-            # commands.append(["gksudo"] + args)
-            # commands.append(["kdesudo"] + args)
+            commands.append(["gksudo"] + args)
+            commands.append(["kdesudo"] + args)
 
     commands.append(["sudo"] + args)
 
