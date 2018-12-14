@@ -5,7 +5,11 @@ from elevate import elevate
 
 
 def is_root():
-    return os.getuid() == 0
+    if sys.platform.startswith("win"):
+        from ctypes import windll
+        return bool(windll.shell32.IsUserAnAdmin())
+    else:
+        return os.getuid() == 0
 
 
 print("before: ", os.getcwd())
