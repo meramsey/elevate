@@ -22,29 +22,28 @@ def quote_applescript(string):
     return '"%s"' % "".join(charmap.get(char, char) for char in string)
 
 
-def elevate(show_console=True, graphical=True):
+def elevate(show_console=True, graphical=True, restore_cwd=True):
+    arg_prefix = "--_with-elevate-"
     if os.getuid() == 0:
+        def filter_args(x, mode=True):
+            comp = ["=" in x, x.startswith(arg_prefix)]
+            return mode == all(comp)
         # tiny option parser to handle our special --_with-elevate-* opts
         elevate_opts = dict(map(
-            lambda y: y.split("_")[1].split("="),
-            filter(
-                lambda x: all([cs in x for cs in ("_", "=", "--")]), sys.argv
-            )
+            lambda y: y.split("_")[1].split("="), filter(filter_args, sys.argv)
         ))
         newdir = elevate_opts.get("with-elevate-cwd", False)
-        if newdir:
+        if newdir and restore_cwd:
             try:                      os.chdir(newdir)
             except FileNotFoundError: pass
             except Exception as e:    raise
-        sys.argv = list(filter(
-            lambda x: not any ([cs in x for cs in ("_", "=", "--")]), sys.argv
-        ))
+        sys.argv = list(filter(lambda x: filter_args(x, mode=False), sys.argv))
         return
 
     args = [
         sys.executable,
         os.path.abspath(sys.argv[0]),
-        "--_with-elevate-cwd=" + os.getcwd()
+        arg_prefix + "cwd=" + os.getcwd() if restore_cwd else ""
     ] + sys.argv[1:]
 
     commands = []

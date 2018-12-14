@@ -1,7 +1,7 @@
 import sys
 
 
-def elevate(show_console=True, graphical=True):
+def elevate(show_console=True, graphical=True, restore_cwd=True):
     """
     Re-launch the current process with root/admin privileges
 
@@ -12,11 +12,14 @@ def elevate(show_console=True, graphical=True):
 
     :param show_console: (Windows only) if True, show a new console for the
         child process. Ignored on Linux / macOS.
-    :param graphical: (Linux / macOS only) if True, attempt to use graphical
+    :param graphical: (POSIX only) if True, attempt to use graphical
         programs (gksudo, etc). Ignored on Windows.
+    :param restore_cwd: (POSIX only) if False, the calling process' previous
+        working directory won't be restored after elevating.
+        Currently ignored on Windows.
     """
     if sys.platform.startswith("win"):
         from elevate.windows import elevate
     else:
         from elevate.posix import elevate
-    elevate(show_console, graphical)
+    elevate(show_console, graphical, restore_cwd)
