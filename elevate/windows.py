@@ -64,7 +64,9 @@ CloseHandle.restype = BOOL
 # At last, the actual implementation!
 
 def elevate(show_console=True, graphical=True, restore_cwd=True):
-    if windll.shell32.IsUserAnAdmin():
+    # NOTE: for testing
+    no_avalanche_arg = "--_with-elevate-invocation=True"
+    if windll.shell32.IsUserAnAdmin() or no_avalanche_arg in sys.argv:
         return
 
     params = ShellExecuteInfo(
@@ -74,7 +76,7 @@ def elevate(show_console=True, graphical=True, restore_cwd=True):
         lpFile=sys.executable.encode('cp1252'),
         lpParameters=subprocess.list2cmdline(
             [
-                abspath(sys.argv[0]),
+                abspath(sys.argv[0]), no_avalanche_arg
             ] + sys.argv[1:]
         ).encode('cp1252'),
         nShow=int(show_console))
