@@ -10,7 +10,9 @@ def _process_elevate_opts():
         ["=" in x, x.startswith( "".join(_OPT_PREFIX) )]
     )
 
-    old_argv = sys.argv.copy()
+    # copy sys.argv (compatibility)
+    old_argv = list(sys.argv)
+    # prevent user code from seeing elevate's options
     sys.argv = list(filter(lambda x: opttest(x, False), old_argv))
     return dict(map(
         lambda y: y.split("_")[1].split("="), filter(opttest, old_argv)
