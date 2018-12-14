@@ -1,4 +1,5 @@
 import errno
+import elevate.elevate_util as elevate_util
 import os
 import sys
 try:
@@ -23,27 +24,26 @@ def quote_applescript(string):
 
 
 def elevate(show_console=True, graphical=True, restore_cwd=True):
-    arg_prefix = "--_with-elevate-"
+    # sys.argv has been changed here
+    elevate_opts = elevate_util._process_elevate_opts()
+
     if os.getuid() == 0:
-        def filter_args(x, mode=True):
-            comp = ["=" in x, x.startswith(arg_prefix)]
-            return mode == all(comp)
-        # tiny option parser to handle our special --_with-elevate-* opts
-        elevate_opts = dict(map(
-            lambda y: y.split("_")[1].split("="), filter(filter_args, sys.argv)
-        ))
-        newdir = elevate_opts.get("with-elevate-cwd", False)
+        newdir = elevate_util._get_opt(elevate_opts, "cwd")
         if newdir and restore_cwd:
             try:                      os.chdir(newdir)
             except FileNotFoundError: pass
             except Exception as e:    raise
-        sys.argv = list(filter(lambda x: filter_args(x, mode=False), sys.argv))
+        return
+
+    # prevent infinite recursion in all cases
+    if elevate_util._get_opt(elevate_opts, "invocation"):
         return
 
     args = [
         sys.executable,
         os.path.abspath(sys.argv[0]),
-        arg_prefix + "cwd=" + os.getcwd() if restore_cwd else ""
+        elevate_util._make_opt("cwd", os.getcwd()) if restore_cwd else "",
+        elevate_util._make_opt("invocation", "True")
     ] + sys.argv[1:]
 
     commands = []

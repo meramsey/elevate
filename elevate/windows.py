@@ -1,4 +1,5 @@
 import ctypes
+import elevate.elevate_util as elevate_util
 from ctypes import POINTER, c_ulong, c_char_p, c_int, c_void_p
 from ctypes.wintypes import HANDLE, BOOL, DWORD, HWND, HINSTANCE, HKEY
 from ctypes import windll
@@ -64,9 +65,12 @@ CloseHandle.restype = BOOL
 # At last, the actual implementation!
 
 def elevate(show_console=True, graphical=True, restore_cwd=True):
-    # NOTE: for testing
-    no_avalanche_arg = "--_with-elevate-invocation=True"
-    if windll.shell32.IsUserAnAdmin() or no_avalanche_arg in sys.argv:
+    # sys.argv is changed
+    elevate_opts = elevate_util._process_elevate_opts()
+
+    if (windll.shell32.IsUserAnAdmin()
+            # prevent infinite recursion in all cases
+            or elevate_util._get_opt(elevate_opts, "invocation")):
         return
 
     params = ShellExecuteInfo(
@@ -76,7 +80,8 @@ def elevate(show_console=True, graphical=True, restore_cwd=True):
         lpFile=sys.executable.encode('cp1252'),
         lpParameters=subprocess.list2cmdline(
             [
-                abspath(sys.argv[0]), no_avalanche_arg
+                abspath(sys.argv[0]),
+                elevate_util._make_opt("invocation", "True")
             ] + sys.argv[1:]
         ).encode('cp1252'),
         nShow=int(show_console))
