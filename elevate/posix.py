@@ -39,12 +39,15 @@ def elevate(show_console=True, graphical=True):
                 "without altering line endings"
                 % quote_applescript(quote_shell(args))])
 
-        if sys.platform.startswith("linux") and os.environ.get("DISPLAY"):
+        elif ("bsd" in sys.platform or sys.platform.startswith("linux")) \
+                and os.environ.get("DISPLAY"):
             commands.append(["pkexec"] + args)
             commands.append(["gksudo"] + args)
             commands.append(["kdesudo"] + args)
 
     commands.append(["sudo"] + args)
+    commands.append(["doas"] + args)
+    commands.append(["su", "root", "-c"] + args)
 
     for args in commands:
         try:
