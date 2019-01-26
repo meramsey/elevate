@@ -65,8 +65,6 @@ def elevate(show_console=True, graphical=True, restore_cwd=True):
 
     commands.append(["sudo"] + args)
 
-    print("execlp  ", args)
-
     for args in commands:
         try:
             os.execlp(args[0], *args)
