@@ -25,7 +25,10 @@ def quote_applescript(string):
 
 def elevate(show_console=True, graphical=True, restore_cwd=True):
     # sys.argv has been changed here
-    elevate_opts = elevate_util._process_elevate_opts()
+    # check both values just in case _process_elevate_opts wasn't
+    #   already called on import
+    elevate_opts = elevate_util._process_elevate_opts() \
+        or elevate_util._ELEVATE_GOT_ARGS
 
     if os.getuid() == 0:
         newdir = elevate_util._get_opt(elevate_opts, "cwd")
@@ -42,9 +45,13 @@ def elevate(show_console=True, graphical=True, restore_cwd=True):
     args = [
         sys.executable,
         os.path.abspath(sys.argv[0]),
-        elevate_util._make_opt("cwd", os.getcwd()) if restore_cwd else "",
         elevate_util._make_opt("invocation", "True")
     ] + sys.argv[1:]
+
+    # some argument parsers can't understand empty command-line options like ""
+    #   so an explicit conditional append is needed
+    if restore_cwd:
+        args.append( elevate_util._make_opt("cwd", os.getcwd()) )
 
     commands = []
 

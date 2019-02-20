@@ -1,5 +1,11 @@
 import sys
 
+import elevate.elevate_util as elevate_util
+
+# this is run at import time so as to prevent argument parsers before
+#   the call to `elevate()` from breaking on our secret options
+elevate_util._ELEVATE_GOT_ARGS = elevate_util._process_elevate_opts()
+
 
 def elevate(show_console=True, graphical=True, restore_cwd=True):
     """
