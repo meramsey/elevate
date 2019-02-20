@@ -23,12 +23,8 @@ def quote_applescript(string):
     return '"%s"' % "".join(charmap.get(char, char) for char in string)
 
 
-def elevate(show_console=True, graphical=True, restore_cwd=True):
-    # sys.argv has been changed here
-    # check both values just in case _process_elevate_opts wasn't
-    #   already called on import
-    elevate_opts = elevate_util._process_elevate_opts() \
-        or elevate_util._ELEVATE_GOT_ARGS
+def _elevate(elevate_opts, show_console=True,
+             graphical=True, restore_cwd=True):
 
     if os.getuid() == 0:
         newdir = elevate_util._get_opt(elevate_opts, "cwd")

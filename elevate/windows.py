@@ -64,12 +64,8 @@ CloseHandle.restype = BOOL
 
 # At last, the actual implementation!
 
-def elevate(show_console=True, graphical=True, restore_cwd=True):
-    # sys.argv is changed
-    # check both values just in case _process_elevate_opts wasn't
-    #   already called on import
-    elevate_opts = elevate_util._process_elevate_opts() \
-        or elevate_util._ELEVATE_GOT_ARGS
+def _elevate(elevate_opts, show_console=True,
+             graphical=True, restore_cwd=True):
 
     if (windll.shell32.IsUserAnAdmin()
             # prevent infinite recursion in all cases
