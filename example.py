@@ -9,8 +9,7 @@ def is_root():
     if sys.platform.startswith("win"):
         from ctypes import windll
         return bool(windll.shell32.IsUserAnAdmin())
-    else:
-        return os.getuid() == 0
+    return os.getuid() == 0
 
 
 parser = argparse.ArgumentParser()

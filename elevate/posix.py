@@ -1,7 +1,7 @@
 import errno
-import elevate.elevate_util as elevate_util
 import os
 import sys
+import elevate.elevate_util as elevate_util
 try:
     from shlex import quote
 except ImportError:

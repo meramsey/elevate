@@ -2,8 +2,6 @@ import sys
 
 # two parts of the prefix of a special elevate command-line option
 _OPT_PREFIX = ("--_", "with-elevate-")
-# preserve the command-line arguments to elevate()
-_ELEVATE_GOT_ARGS = dict()
 
 
 def _process_elevate_opts():
@@ -30,16 +28,23 @@ def _process_elevate_opts():
         Use _elevate_util._get_opt(opts, name) to get an option from this
             dictionary.
     """
-    opttest = lambda x, m=True: m == all(
-        ["=" in x, x.startswith( "".join(_OPT_PREFIX) )]
+    # avoid importing re; use a small function to find only either elevate or
+    #  non-elevate options
+    option_tester = lambda option, cond=True: cond == all(
+        ["=" in option, option.startswith( "".join(_OPT_PREFIX) )]
     )
 
     # copy sys.argv (compatibility)
     old_argv = list(sys.argv)
     # prevent user code from seeing elevate's options
-    sys.argv = list(filter(lambda x: opttest(x, False), old_argv))
+    # note the condition to option_tester is True to remove elevate options
+    sys.argv = list(filter(lambda x: option_tester(x, cond=False), old_argv))
+    # a dictionary out of the options' names and their values
     return dict(map(
-        lambda y: y.split("_")[1].split("="), filter(opttest, old_argv)
+        # turn --_with-elevate-* into with-elevate-* and then into *
+        lambda option: option.split("_")[1].split("="),
+        # note the condition to option_tester is True to find elevate options
+        filter(option_tester, old_argv)
     ))
 
 
@@ -48,7 +53,7 @@ def _get_opt(opts, name):
         Arguments:  opts (a dictionary of options and values, like returned
                         from _process_elevate_opts)
                     name (the base name of the option to get, without its
-                        with-elevate prefix)
+                        with-elevate- prefix)
         Returns:    The value of the option, which might be boolean, or False
                         if the option wasn't specified
         Throws:     No
